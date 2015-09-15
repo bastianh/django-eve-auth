@@ -14,5 +14,8 @@ class EveAuthConfig(AppConfig):
         if ea_settings.EVE_AUTH_ALLOW_INSECURE_TRANSPORT:
             os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
         else:
-            del os.environ["OAUTHLIB_INSECURE_TRANSPORT"]
+            try:
+                del os.environ["OAUTHLIB_INSECURE_TRANSPORT"]
+            except KeyError:
+                pass
 
