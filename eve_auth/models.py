@@ -27,7 +27,7 @@ class EveCharacter(models.Model):
 
 class EveApiKey(TimeStampedModel):
     STATUS = Choices('unverified', 'active', 'error', 'suspended')
-    KEY_TYPES = (('char', 'Character'), ('corp', 'Corporation'),)
+    KEY_TYPES = (('char', 'Character'), ('corp', 'Corporation'), ('account', 'Account'))
 
     key_id = models.IntegerField()
     vcode = models.CharField(max_length=255)
@@ -37,7 +37,7 @@ class EveApiKey(TimeStampedModel):
     characters = models.ManyToManyField(EveCharacter)
     corporation = models.ForeignKey(EveCorporation, null=True)
     access_mask = models.IntegerField(null=True)
-    key_type = models.CharField(choices=KEY_TYPES, max_length=2)
+    key_type = models.CharField(choices=KEY_TYPES, max_length=8)
     expires = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False)
 

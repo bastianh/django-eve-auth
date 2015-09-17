@@ -19,9 +19,7 @@ def oauth_object(request, state=None):
 def login_view(request):
     oauth = oauth_object(request)
     authorization_url, state = oauth.authorization_url(CONFIG.get("AUTHORIZATION_BASE_URL"))
-
     request.session['eve_oauth_state'] = state
-
     return HttpResponseRedirect(authorization_url)
 
 
