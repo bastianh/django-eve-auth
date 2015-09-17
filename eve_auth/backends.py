@@ -2,15 +2,11 @@ from __future__ import absolute_import, unicode_literals
 
 import random
 import string
-import celery.exceptions
 
 from django.contrib.auth import get_user_model
-
 from django.db import IntegrityError
 
 from .models import EveLoginToken, EveCharacter
-from .tasks import update_character_info
-from . import settings as ea_settings
 
 
 # noinspection PyMethodMayBeStatic
@@ -44,16 +40,6 @@ class EveSSOBackend(object):
             logintoken.character = character
             logintoken.character_owner_hash = character_owner_hash
             logintoken.save()
-
-            result = update_character_info.apply_async([character_id])
-            timeout = ea_settings.EVE_AUTH_UPDATE_CHARACTERINFO_TIMEOUT
-            if timeout:
-                try:
-                    updated = result.get(timeout=timeout)
-                    if updated:
-                        character.refresh_from_db()
-                except celery.exceptions.TimeoutError:
-                    pass
 
             return user
 

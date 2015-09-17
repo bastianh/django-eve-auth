@@ -1,10 +1,15 @@
 from __future__ import absolute_import
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 from celery import shared_task
 
 from .utils.eveapi import eveapi
+
+
+
+
+
 
 
 # logger = get_task_logger(__name__)
@@ -13,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def check_key(key_id):
-    from .models import EveApiKey
+    from .models import EveApiKey, EveCharacter, EveCorporation
     api_model = EveApiKey.objects.get(pk=key_id)
     account = eveapi.get_account_api(api_model=api_model)
     info, _, _ = account.key_info()
@@ -21,9 +26,25 @@ def check_key(key_id):
     api_model.key_type = info.get("type")
     api_model.access_mask = info.get("access_mask")
     api_model.status = "active"
-    api_model.save()
+    expires = info.get("expire_ts")
+    if expires:
+        api_model.expires = datetime.utcfromtimestamp(expires).replace(tzinfo=timezone.utc)
+    else:
+        api_model.expires = None
+    api_model.updated = datetime.now(timezone.utc)
 
-    logger.warn("DATA %r", info)
+    if api_model.key_type in ['account', 'char']:
+        for charid, chardata in info.get("characters", {}).items():
+            character, _ = EveCharacter.objects.get_or_create(character_id=charid, character_name=chardata.get('name'))
+            api_model.characters.add(character)
+
+    if api_model.key_type == "corp":
+        corpinfo = list(info.get("characters").values())[0].get("corp")
+        corp, _ = EveCorporation.objects.get_or_create(corporation_id=corpinfo.get("id"),
+                                                       corporation_name=corpinfo.get("name"))
+        api_model.corporation = corp
+
+    api_model.save()
     return 1
 
 

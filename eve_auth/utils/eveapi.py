@@ -1,11 +1,26 @@
 import evelink
+from django.core.cache import cache
+
+
+class DjangoCache(evelink.api.APICache):
+    """An implementation of APICache using djangos cache framework
+
+    it is using the default cache (make it configurable?)
+    """
+
+    def put(self, key, value, duration):
+        cache.set("evelink_" + key, value, duration)
+
+    def get(self, key):
+        return cache.get("evelink_" + key)
+
 
 class EVEApi(object):
     """ this class caches a connection to the eve api for workers
     """
 
     def __init__(self):
-        self._api = evelink.api.API()
+        self._api = evelink.api.API(cache=DjangoCache())
 
     def get_api(self, api_model=None) -> evelink.api.API:
         if api_model:

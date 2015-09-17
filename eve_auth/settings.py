@@ -17,8 +17,3 @@ CONFIG = CONFIG_DEFAULTS.copy()
 CONFIG.update(EVE_AUTH_CONFIG)
 
 EVE_AUTH_ALLOW_INSECURE_TRANSPORT = getattr(settings, "EVE_AUTH_ALLOW_INSECURE_TRANSPORT", settings.DEBUG)
-
-EVE_AUTH_UPDATE_CHARACTERINFO_TIMEOUT = getattr(settings, "EVE_AUTH_UPDATE_CHARACTERINFO_TIMEOUT", 1)
-""" on first login wait for that many seconds for character info from eve server. set to False or 0 to not wait at all (pure async)
-warning: don't set to high, it blocks the login call.
-"""
