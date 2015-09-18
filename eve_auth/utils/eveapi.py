@@ -42,8 +42,8 @@ class API(evelink.api.API):
         """
         :rtype : APIResultEx
         """
-        from eve_auth.models import EveApiCall
-        apicall = EveApiCall(path=path, params=json.dumps(params), apikey=self.api_key_object)
+        from eve_auth.models import ApiCall
+        apicall = ApiCall(path=path, params=json.dumps(params), apikey=self.api_key_object)
 
         try:
             apiresult = super(API, self).get(path, params)

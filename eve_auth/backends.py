@@ -6,7 +6,7 @@ import string
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 
-from .models import EveLoginToken, EveCharacter
+from .models import EveLoginToken, Character
 
 
 # noinspection PyMethodMayBeStatic
@@ -22,7 +22,7 @@ class EveSSOBackend(object):
         except EveLoginToken.DoesNotExist:
             # TODO check user generation allowed
             username = character_name
-            character, _ = EveCharacter.objects.get_or_create(character_id=character_id, character_name=character_name)
+            character = Character.get_or_create(character_id, character_name)
 
             user = None
             for i in range(0, 10):

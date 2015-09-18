@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 @shared_task
 def check_key(key_id):
-    from .models import EveApiKey, EveCharacter, EveCorporation
-    api_model = EveApiKey.objects.get(pk=key_id)
+    from .models import ApiKey, Character, Corporation
+    api_model = ApiKey.objects.get(pk=key_id)
     account = eveapi.get_account_api(api_model=api_model)
     info, _, _ = account.key_info()
 
@@ -30,13 +30,12 @@ def check_key(key_id):
 
     if api_model.key_type in ['account', 'char']:
         for charid, chardata in info.get("characters", {}).items():
-            character, _ = EveCharacter.objects.get_or_create(character_id=charid, character_name=chardata.get('name'))
+            character = Character.get_or_create(character_id=charid, character_name=chardata.get('name'))
             api_model.characters.add(character)
 
     if api_model.key_type == "corp":
         corpinfo = list(info.get("characters").values())[0].get("corp")
-        corp, _ = EveCorporation.objects.get_or_create(corporation_id=corpinfo.get("id"),
-                                                       corporation_name=corpinfo.get("name"))
+        corp = Corporation.get_or_create(corporation_id=corpinfo.get("id"), corporation_name=corpinfo.get("name"))
         api_model.corporation = corp
 
     api_model.save()
@@ -46,28 +45,27 @@ def check_key(key_id):
 
 @shared_task
 def update_character_info(character_id):
-    from .models import EveCharacter, EveCorporation
+    from .models import Character, Corporation, Alliance
     eve = eveapi.get_eve_api()
 
     try:
-        character = EveCharacter.objects.get(character_id=character_id)
-    except EveCharacter.DoesNotExist:
+        character = Character.objects.get(id=character_id)
+    except Character.DoesNotExist:
         return False
 
     info, _, _ = eve.character_info_from_id(char_id=character_id)
 
     corp = info.get("corp", {})
-    corpmodel, _ = EveCorporation.objects.get_or_create(corporation_id=corp.get("id"),
-                                                        defaults={"corporation_name": corp.get("name")})
+    corpmodel = Corporation.get_or_create(corporation_id=corp.get("id"), corporation_name=corp.get("name"))
     character.corporation = corpmodel
 
-    alliance = info.get("alliance", {})
-    if corpmodel.alliance_id != alliance.get("id"):
-        corpmodel.alliance_id = alliance.get("id")
-        corpmodel.alliance_name = alliance.get("name")
+    alliance_data = info.get("alliance", {})
+    if corpmodel.alliance_id != alliance_data.get("id"):
+        corpmodel.alliance = Alliance.get_or_create(alliance_id=alliance_data.get("id"),
+                                                    alliance_name=alliance_data.get("name"))
         corpmodel.save()
 
-    character.updated = datetime.utcnow()
+    character.updated = datetime.utcnow().replace(tzinfo=timezone.utc)
     character.save()
 
     return True
