@@ -3,16 +3,11 @@ from datetime import datetime, timezone
 import logging
 
 from celery import shared_task
+from celery.utils.log import get_task_logger
 
 from .utils.eveapi import eveapi
 
-
-
-
-
-
-
-# logger = get_task_logger(__name__)
+logger2 = get_task_logger(__name__)
 logger = logging.getLogger(__name__)
 
 
@@ -45,6 +40,7 @@ def check_key(key_id):
         api_model.corporation = corp
 
     api_model.save()
+
     return 1
 
 

@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from model_utils import Choices
 from model_utils.fields import StatusField, MonitorField, AutoCreatedField
 from model_utils.models import TimeStampedModel
+
 from eve_auth.tasks import update_character_info
 
 
@@ -53,6 +54,26 @@ class EveApiKey(models.Model):
     updated = models.DateTimeField(null=True)
     status_changed = MonitorField(monitor='status')
     created = AutoCreatedField()
+
+    def __str__(self):
+        return "ApiKey %d" % self.key_id
+
+
+class EveApiCall(models.Model):
+    path = models.CharField(max_length=150)
+    params = models.TextField(null=True)
+    success = models.BooleanField(default=False)
+    created = AutoCreatedField()
+
+    result_timestamp = models.DateTimeField(null=True)
+    result_expires = models.DateTimeField(null=True)
+
+    apikey = models.ForeignKey(EveApiKey, null=True)
+
+    api_error_code = models.IntegerField(null=True)
+    api_error_message = models.CharField(null=True, max_length=255)
+    http_error_code = models.IntegerField(null=True)
+    http_error_message = models.CharField(null=True, max_length=255)
 
 
 class EveLoginToken(models.Model):
