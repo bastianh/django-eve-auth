@@ -1,5 +1,5 @@
 from __future__ import absolute_import, unicode_literals
-
+import logging
 import random
 import string
 
@@ -8,14 +8,19 @@ from django.db import IntegrityError
 
 from .models import EveLoginToken, Character
 
+logger = logging.getLogger(__name__)
+
 
 # noinspection PyMethodMayBeStatic
 class EveSSOBackend(object):
-    def authenticate(self, eve_userdata=None):
+    def authenticate(self, eve_userdata=None, token=None):
         character_id = eve_userdata.get('CharacterID')
         character_owner_hash = eve_userdata.get('CharacterOwnerHash')
         character_name = eve_userdata.get('CharacterName')
-
+        logger.info("authenticate %r", character_name, extra={'token': token, "userdata": eve_userdata})
+        logger.debug("test")
+        logger.warn("test2")
+        logger.critical("ICECREAM!")
         try:
             model = EveLoginToken.objects.get(character_id=character_id, character_owner_hash=character_owner_hash)
             return model.owner
@@ -38,6 +43,7 @@ class EveSSOBackend(object):
 
             logintoken = EveLoginToken(owner=user)
             logintoken.character = character
+            logintoken.token = token
             logintoken.character_owner_hash = character_owner_hash
             logintoken.save()
 

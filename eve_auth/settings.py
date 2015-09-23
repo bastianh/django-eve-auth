@@ -1,5 +1,4 @@
 from __future__ import absolute_import, unicode_literals
-from importlib import import_module
 
 from django.conf import settings
 
@@ -9,6 +8,7 @@ CONFIG_DEFAULTS = {
     "AUTHORIZATION_BASE_URL": "https://login.eveonline.com/oauth/authorize",
     "TOKEN_URL": "https://login.eveonline.com/oauth/token",
     "VERIFY_URL": "https://login.eveonline.com/oauth/verify",
+    "SCOPE": None,  # list
 }
 
 EVE_AUTH_CONFIG = getattr(settings, 'EVE_AUTH_CONFIG', {})

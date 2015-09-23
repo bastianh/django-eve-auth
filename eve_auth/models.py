@@ -4,7 +4,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from model_utils import Choices
 from model_utils.fields import StatusField, MonitorField, AutoCreatedField
-from model_utils.models import TimeStampedModel
 
 from eve_auth.tasks import update_character_info
 
